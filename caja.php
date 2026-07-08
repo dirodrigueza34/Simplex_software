@@ -16,7 +16,7 @@ switch ($method) {
     case 'GET':
         try {
             // Selección utilizando los nombres de columnas reales de movimientos_contables
-            $stmt = $pdo->prepare("SELECT id_movimiento, date, descripcion, total FROM movimientos_contables ORDER BY id_movimiento DESC");
+            $stmt = $pdo->prepare("SELECT id_movimiento, fecha, descripcion, total FROM movimientos_contables ORDER BY id_movimiento DESC");
             $stmt->execute();
             $movimientos = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
@@ -40,20 +40,20 @@ switch ($method) {
 
     case 'POST':
         $data = json_decode(file_get_contents("php://input"), true);
-        if (!$data || empty($data['date']) || empty($data['descripcion']) || !isset($data['total'])) {
+        if (!$data || empty($data['fecha']) || empty($data['descripcion']) || !isset($data['total'])) {
             http_response_code(400);
-            echo json_encode(["success" => false, "error" => "Todos los campos de la transacción (date, descripcion, total) son obligatorios."], JSON_UNESCAPED_UNICODE);
+            echo json_encode(["success" => false, "error" => "Todos los campos de la transacción (fecha, descripcion, total) son obligatorios."], JSON_UNESCAPED_UNICODE);
             exit();
         }
         
-        $date = trim($data['date']);
+        $fecha = trim($data['fecha']);
         $descripcion = trim($data['descripcion']);
         $total = floatval($data['total']);
 
         try {
-            // Registro seguro de la transacción financiera mediante parámetros posicionales
-            $stmt = $pdo->prepare("INSERT INTO movimientos_contables (date, descripcion, total) VALUES (?, ?, ?)");
-            if ($stmt->execute([$date, $descripcion, $total])) {
+            // Registro seguro de la transacción financiera mapeando tu columna real 'fecha'
+            $stmt = $pdo->prepare("INSERT INTO movimientos_contables (fecha, descripcion, total) VALUES (?, ?, ?)");
+            if ($stmt->execute([$fecha, $descripcion, $total])) {
                 http_response_code(201);
                 echo json_encode(["success" => true, "message" => "Movimiento contable registrado satisfactoriamente."], JSON_UNESCAPED_UNICODE);
             }

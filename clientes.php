@@ -15,8 +15,8 @@ $method = $_SERVER['REQUEST_METHOD'];
 switch ($method) {
     case 'GET':
         try {
-            // Lectura de la tabla clientes de tu base de datos sistem_invent
-            $stmt = $pdo->prepare("SELECT * FROM clientes ORDER BY id_cliente DESC");
+            // Consulta de lectura unificada para tu tabla clientes
+            $stmt = $pdo->prepare("SELECT id_cliente, nombre, documento, telefono, direccion, email, fecha_registro FROM clientes ORDER BY id_cliente DESC");
             $stmt->execute();
             $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
@@ -30,32 +30,33 @@ switch ($method) {
 
     case 'POST':
         $data = json_decode(file_get_contents("php://input"), true);
-        if (!$data || empty($data['cedula']) || empty($data['nombre']) || empty($data['telefono']) || empty($data['direccion'])) {
+        if (!$data || empty($data['documento']) || empty($data['nombre']) || empty($data['telefono']) || empty($data['direccion']) || empty($data['email'])) {
             http_response_code(400);
-            echo json_encode(["success" => false, "error" => "Todos los campos del cliente (cedula, nombre, telefono, direccion) son obligatorios."], JSON_UNESCAPED_UNICODE);
+            echo json_encode(["success" => false, "error" => "Todos los campos (documento, nombre, telefono, direccion, email) son obligatorios."], JSON_UNESCAPED_UNICODE);
             exit();
         }
         
-        $cedula = trim($data['cedula']);
+        $documento = trim($data['documento']);
         $nombre = trim($data['nombre']);
         $telefono = trim($data['telefono']);
         $direccion = trim($data['direccion']);
+        $email = trim($data['email']);
         
         try {
-            // Control perimetral para evitar cédulas duplicadas en la base de datos
-            $check = $pdo->prepare("SELECT id_cliente FROM clientes WHERE cedula = ?");
-            $check->execute([$cedula]);
+            // Control perimetral para evitar documentos duplicados en la base de datos
+            $check = $pdo->prepare("SELECT id_cliente FROM clientes WHERE documento = ?");
+            $check->execute([$documento]);
             if ($check->fetch()) {
                 http_response_code(409);
-                echo json_encode(["success" => false, "error" => "La cédula del cliente ya se encuentra registrada."], JSON_UNESCAPED_UNICODE);
+                echo json_encode(["success" => false, "error" => "El documento de este cliente ya se encuentra registrado."], JSON_UNESCAPED_UNICODE);
                 exit();
             }
             
             // Inserción limpia mediante parámetros posicionales seguros contra inyecciones SQL
-            $stmt = $pdo->prepare("INSERT INTO clientes (cedula, nombre, telefono, direccion) VALUES (?, ?, ?, ?)");
-            if ($stmt->execute([$cedula, $nombre, $telefono, $direccion])) {
+            $stmt = $pdo->prepare("INSERT INTO clientes (nombre, documento, telefono, direccion, email) VALUES (?, ?, ?, ?, ?)");
+            if ($stmt->execute([$nombre, $documento, $telefono, $direccion, $email])) {
                 http_response_code(201);
-                echo json_encode(["success" => true, "message" => "Cliente registrado satisfactoriamente en Simplex Software."], JSON_UNESCAPED_UNICODE);
+                echo json_encode(["success" => true, "message" => "Cliente registrado de forma exitosa en Simplex Software."], JSON_UNESCAPED_UNICODE);
             }
         } catch (PDOException $e) {
             http_response_code(500);

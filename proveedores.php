@@ -16,7 +16,7 @@ switch ($method) {
     case 'GET':
         try {
             // Mapeo directo a tu tabla real en singular: proveedor
-            $stmt = $pdo->prepare("SELECT * FROM proveedor ORDER BY id_proveedor DESC");
+            $stmt = $pdo->prepare("SELECT id_proveedor, nombre, telefono FROM proveedor ORDER BY id_proveedor DESC");
             $stmt->execute();
             $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
@@ -30,29 +30,29 @@ switch ($method) {
 
     case 'POST':
         $data = json_decode(file_get_contents("php://input"), true);
-        if (!$data || empty($data['nit']) || empty($data['nombre_prov']) || empty($data['telefono_prov'])) {
+        if (!$data || empty($data['nombre']) || empty($data['telefono'])) {
             http_response_code(400);
-            echo json_encode(["success" => false, "error" => "Los campos nit, nombre_prov y telefono_prov son obligatorios."], JSON_UNESCAPED_UNICODE);
+            echo json_encode(["success" => false, "error" => "Los campos 'nombre' y 'telefono' son obligatorios."], JSON_UNESCAPED_UNICODE);
             exit();
         }
         
-        $nit = trim($data['nit']);
-        $nombre_prov = trim($data['nombre_prov']);
-        $telefono_prov = trim($data['telefono_prov']);
+        $nombre = trim($data['nombre']);
+        $telefono = trim($data['telefono']);
         
         try {
-            $check = $pdo->prepare("SELECT id_proveedor FROM proveedor WHERE nit = ?");
-            $check->execute([$nit]);
+            // Validación de control perimetral para evitar nombres duplicados
+            $check = $pdo->prepare("SELECT id_proveedor FROM proveedor WHERE nombre = ?");
+            $check->execute([$nombre]);
             if ($check->fetch()) {
                 http_response_code(409);
-                echo json_encode(["success" => false, "error" => "El NIT de este proveedor ya está registrado."], JSON_UNESCAPED_UNICODE);
+                echo json_encode(["success" => false, "error" => "El nombre de este proveedor ya está registrado."], JSON_UNESCAPED_UNICODE);
                 exit();
             }
             
-            $stmt = $pdo->prepare("INSERT INTO proveedor (nit, nombre_prov, telefono_prov) VALUES (?, ?, ?)");
-            if ($stmt->execute([$nit, $nombre_prov, $telefono_prov])) {
+            $stmt = $pdo->prepare("INSERT INTO proveedor (nombre, telefono) VALUES (?, ?)");
+            if ($stmt->execute([$nombre, $telefono])) {
                 http_response_code(201);
-                echo json_encode(["success" => true, "message" => "Proveedor indexado correctamente en la base de datos."], JSON_UNESCAPED_UNICODE);
+                echo json_encode(["success" => true, "message" => "Proveedor registrado correctamente en la base de datos."], JSON_UNESCAPED_UNICODE);
             }
         } catch (PDOException $e) {
             http_response_code(500);
