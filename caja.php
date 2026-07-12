@@ -51,7 +51,7 @@ switch ($method) {
         $total = floatval($data['total']);
 
         try {
-            // Registro seguro de la transacción financiera mapeando tu columna real 'fecha'
+            // Registro seguro de la transacción
             $stmt = $pdo->prepare("INSERT INTO movimientos_contables (fecha, descripcion, total) VALUES (?, ?, ?)");
             if ($stmt->execute([$fecha, $descripcion, $total])) {
                 http_response_code(201);

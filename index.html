@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simplex Software - Enterprise Portal</title>
+    <link rel="stylesheet" href="https://cloudflare.com">
+    <style>
+        body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #092047, #1e5bb8); margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; box-sizing: border-box; }
+        .contenedor { background: #fff; width: 100%; max-width: 600px; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .logo-marca { text-align: center; margin-bottom: 10px; }
+        .logo-marca img { width: 100px; height: auto; border-radius: 50%; }
+        h2 { text-align: center; margin: 0 0 5px 0; color: #111827; }
+        .subtitulo { text-align: center; color: #666; font-size: 14px; margin-bottom: 20px; }
+        
+        #pantalla-login { display: block; }
+        #pantalla-dashboard { display: none; }
+        
+       
+        .pestanas-navegacion { display: flex; gap: 4px; margin-bottom: 20px; width: 100%; justify-content: space-between; }
+        .btn-pestana { flex: 1; padding: 10px 4px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.3s; background: #f3f4f6; color: #374151; font-size: 11px; text-align: center; white-space: nowrap; }
+        .btn-pestana.activo { background: #111827; color: #fff; }
+        
+        .modulo-vista { display: none; }
+        .modulo-vista.activo { display: block; }
+        
+        label { display: block; margin-top: 12px; font-weight: bold; color: #374151; font-size: 14px; }
+        input { width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
+        input:focus { border-color: #7cfc00; outline: none; box-shadow: 0 0 8px rgba(124,252,0,0.6); }
+        
+        .btn-enviar { margin-top: 20px; width: 100%; padding: 12px; background: #111827; color: #fff; border: none; border-radius: 8px; font-weight: bold; font-size: 15px; cursor: pointer; transition: 0.3s; }
+        .btn-enviar:hover { background: #1f2937; }
+        .btn-consultar { margin-top: 10px; width: 100%; padding: 12px; background: #059669; color: #fff; border: none; border-radius: 8px; font-weight: bold; font-size: 15px; cursor: pointer; transition: 0.3s; }
+        .btn-consultar:hover { background: #047857; }
+        
+        pre { background: #1e1e1e; color: #39ff14; padding: 15px; border-radius: 8px; overflow-x: auto; font-family: 'Courier New', Courier, monospace; font-size: 13px; max-height: 200px; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+<div class="contenedor">
+    <div class="logo-marca">
+        <img src="logo.png" onerror="this.onerror=null; this.src='https://placeholder.com';" alt="Logo Simplex">
+    </div>
+
+    <h2>Simplex Software</h2>
+    <div id="dinamic-sub" class="subtitulo">Sistema de Inventario y Caja Menor</div>
+
+    <!-- PANTALLA 1: FORMULARIO DE INICIO DE SESIÓN -->
+    <div id="pantalla-login">
+        <h3 style="text-align: center; margin-top: 0;">Iniciar Sesión</h3>
+        <label>Usuario:</label>
+        <input type="text" id="login-usuario" placeholder="Escribe tu usuario (Ej: Diana)">
+        
+        <label>Contraseña:</label>
+        <input type="password" id="login-password" placeholder="••••••">
+        
+        <button class="btn-enviar" onclick="ejecutarAutenticacion()"><i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión</button>
+    </div>
+
+    <!-- PANTALLA 2: PANEL DE CONTROL (6 MÓDULOS) -->
+    <div id="pantalla-dashboard">
+        <div class="pestanas-navegacion">
+            <button id="tab-cate" class="btn-pestana activo" onclick="cambiarVista('categorias')">Categorías</button>
+            <button id="tab-prod" class="btn-pestana" onclick="cambiarVista('productos')">Productos</button>
+            <button id="tab-caja" class="btn-pestana" onclick="cambiarVista('caja')">Caja Menor</button>
+            <button id="tab-clie" class="btn-pestana" onclick="cambiarVista('clientes')">Clientes</button>
+            <button id="tab-prov" class="btn-pestana" onclick="cambiarVista('proveedores')">Proveedores</button>
+            <button id="tab-vent" class="btn-pestana" onclick="cambiarVista('ventas')">Ventas</button>
+        </div>
+
+        <!-- MÓDULO 1: CATEGORÍAS -->
+        <div id="vista-categorias" class="modulo-vista activo">
+            <h3 style="margin:0;">Clasificación de Inventarios</h3>
+            <label>Nombre de la Categoría:</label>
+            <input type="text" id="cat-nombre" placeholder="Ej: Lácteos y Quesos">
+            <button class="btn-enviar" onclick="apiPOST('categorias.php', {nombre: 'cat-nombre'})">Guardar Categoría (POST)</button>
+            <button class="btn-consultar" onclick="apiGET('categorias.php')">Consultar Categorías (GET)</button>
+        </div>
+
+        <!-- MÓDULO 2: PRODUCTOS -->
+        <div id="vista-productos" class="modulo-vista">
+            <h3 style="margin:0;">Control de Inventario</h3>
+            <label>Código:</label><input type="text" id="p-codigo" placeholder="Ej: P0105">
+            <label>Nombre:</label><input type="text" id="p-nombre" placeholder="Ej: Galletas">
+            <label>Precio ($):</label><input type="number" id="p-precio" placeholder="Ej: 1200">
+            <label>Stock:</label><input type="number" id="p-stock" placeholder="Ej: 50">
+            <label>ID Categoría:</label><input type="number" id="p-categoria" placeholder="Ej: 3">
+            <button class="btn-enviar" onclick="apiPOST('productos.php', {codigo: 'p-codigo', nombre: 'p-nombre', precio: 'p-precio', stock: 'p-stock', id_categoria: 'p-categoria'})">Guardar Producto (POST)</button>
+            <button class="btn-consultar" onclick="apiGET('productos.php')">Consultar Productos (GET)</button>
+        </div>
+
+        <!-- MÓDULO 3: CAJA MENOR -->
+        <div id="vista-caja" class="modulo-vista">
+            <h3 style="margin:0;">Movimientos de Caja Menor</h3>
+            <label>Fecha:</label><input type="date" id="c-fecha" value="2026-07-08">
+            <label>Descripción:</label><input type="text" id="c-descripcion" placeholder="Concepto del movimiento">
+            <label>Monto ($):</label><input type="number" id="c-total" placeholder="Ej: 35000">
+            <button class="btn-enviar" onclick="apiPOST('caja.php', {fecha: 'c-fecha', descripcion: 'c-descripcion', total: 'c-total'})">Registrar Movimiento (POST)</button>
+            <button class="btn-consultar" onclick="apiGET('caja.php')">Consultar Caja Menor (GET)</button>
+        </div>
+
+        <!-- MÓDULO 4: CLIENTES -->
+        <div id="vista-clientes" class="modulo-vista">
+            <h3 style="margin:0;">Registro de Clientes</h3>
+            <label>Documento:</label><input type="text" id="cl-doc" placeholder="Ej: 10203040">
+            <label>Nombre Completo:</label><input type="text" id="cl-nom" placeholder="Ej: Carlos Mendoza">
+            <label>Teléfono:</label><input type="text" id="cl-tel" placeholder="Ej: 3157778899">
+            <label>Dirección:</label><input type="text" id="cl-dir" placeholder="Ej: Calle 15">
+            <label>Email:</label><input type="text" id="cl-email" placeholder="Ej: carlos@email.com">
+            <button class="btn-enviar" onclick="apiPOST('clientes.php', {documento: 'cl-doc', nombre: 'cl-nom', telefono: 'cl-tel', direccion: 'cl-dir', email: 'cl-email'})">Registrar Cliente (POST)</button>
+            <button class="btn-consultar" onclick="apiGET('clientes.php')">Consultar Clientes (GET)</button>
+        </div>
+
+        <!-- MÓDULO 5: PROVEEDORES -->
+        <div id="vista-proveedores" class="modulo-vista">
+            <h3 style="margin:0;">Mantenimiento de Proveedores</h3>
+            <label>Nombre Empresa:</label><input type="text" id="pr-nom" placeholder="Ej: Distribuidora del Valle">
+            <label>Teléfono de Contacto:</label><input type="text" id="pr-tel" placeholder="Ej: 6024445566">
+            <button class="btn-enviar" onclick="apiPOST('proveedores.php', {nombre: 'pr-nom', telefono: 'pr-tel'})">Registrar Proveedor (POST)</button>
+            <button class="btn-consultar" onclick="apiGET('proveedores.php')">Consultar Proveedores (GET)</button>
+        </div>
+
+        <!-- MÓDULO 6: VENTAS -->
+        <div id="vista-ventas" class="modulo-vista">
+            <h3 style="margin:0;">Registro Maestro de Ventas</h3>
+            <label>Fecha Factura:</label><input type="date" id="v-fecha" value="2026-07-08">
+            <label>Monto Total Venta ($):</label><input type="number" id="v-total" placeholder="Ej: 3000">
+            <label>ID Cliente Comprador:</label><input type="number" id="v-cliente" placeholder="Ej: 1">
+            <button class="btn-enviar" onclick="apiPOST('ventas.php', {fecha: 'v-fecha', total: 'v-total', id_cliente: 'v-cliente'})">Procesar Venta (POST)</button>
+            <button class="btn-consultar" onclick="apiGET('ventas.php')">Consultar Ventas (GET)</button>
+        </div>
+    </div>
+
+    <h4>Respuesta del servidor:</h4>
+    <pre id="json-output">Esperando autenticación de seguridad corporativa...</pre>
+</div>
+
+<script>
+    const output = document.getElementById('json-output');
+
+    // Función asíncrona de Login contra tu base de datos relacional
+    function ejecutarAutenticacion() {
+        const payload = {
+            usuario: document.getElementById('login-usuario').value,
+            password: document.getElementById('login-password').value
+        };
+
+        fetch('login_auth.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json())
+        .then(data => {
+            output.innerText = JSON.stringify(data, null, 4);
+            if(data.success) {
+                document.getElementById('pantalla-login').style.display = 'none';
+                document.getElementById('pantalla-dashboard').style.display = 'block';
+                document.getElementById('dinamic-sub').innerText = "Consola Operativa Maestra Desbloqueada";
+            }
+        })
+        .catch(err => output.innerText = "Error de login: " + err);
+    }
+
+    // Navegación interna entre módulos mapeando IDs exactos de botones
+    function cambiarVista(modulo) {
+        document.querySelectorAll('.modulo-vista').forEach(v => v.classList.remove('activo'));
+        document.querySelectorAll('.btn-pestana').forEach(b => b.classList.remove('activo'));
+        
+        document.getElementById('vista-' + modulo).classList.add('activo');
+        
+        let idBoton = '';
+        if (modulo === 'categorias') idBoton = 'tab-cate';
+        else if (modulo === 'productos') idBoton = 'tab-prod';
+        else if (modulo === 'caja') idBoton = 'tab-caja';
+        else if (modulo === 'clientes') idBoton = 'tab-clie';
+        else if (modulo === 'proveedores') idBoton = 'tab-prov';
+        else if (modulo === 'ventas') idBoton = 'tab-vent';
+        
+        document.getElementById(idBoton).classList.add('activo');
+    }
+
+    // Función genérica para consultas asíncronas de lectura (GET)
+    function apiGET(url) {
+        fetch(url).then(res => res.json()).then(data => output.innerText = JSON.stringify(data, null, 4))
+        .catch(err => output.innerText = "Error GET: " + err);
+    }
+
+    // Función genérica para inserción de datos relacionales (POST)
+    function apiPOST(url, campos) {
+        const payload = {};
+        for (let key in campos) {
+            payload[key] = document.getElementById(campos[key]).value;
+        }
+        fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+        .then(res => res.json()).then(data => output.innerText = JSON.stringify(data, null, 4))
+        .catch(err => output.innerText = "Error POST: " + err);
+    }
+</script>

@@ -1,7 +1,7 @@
 <?php
-// Configuración de conexión para el proyecto Simplex Software
+// Configuración de conexión 
 $host = "localhost";
-$dbname = "sistem_invent"; // Nombre exacto de tu base de datos relacional
+$dbname = "sistem_invent";
 $username = "root";
 $password = "";
 

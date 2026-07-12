@@ -15,7 +15,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 switch ($method) {
     case 'GET':
         try {
-            // Consulta de lectura unificada para tu tabla clientes
+            // Consulta de lectura unificada para la tabla clientes
             $stmt = $pdo->prepare("SELECT id_cliente, nombre, documento, telefono, direccion, email, fecha_registro FROM clientes ORDER BY id_cliente DESC");
             $stmt->execute();
             $data = $stmt->fetchAll(PDO::FETCH_ASSOC);
